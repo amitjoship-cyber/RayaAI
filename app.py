@@ -3,19 +3,28 @@ import asyncio
 import edge_tts
 import tempfile
 import os
+import shutil
 import librosa
 import soundfile as sf
 
 from pydub import AudioSegment
 
-# FFmpeg paths
-AudioSegment.converter = r"C:\ffmpeg\bin\ffmpeg.exe"
-AudioSegment.ffmpeg = r"C:\ffmpeg\bin\ffmpeg.exe"
-AudioSegment.ffprobe = r"C:\ffmpeg\bin\ffprobe.exe"
+# -----------------------------------
+# Auto-detect FFmpeg
+# -----------------------------------
+ffmpeg_path = shutil.which("ffmpeg")
+ffprobe_path = shutil.which("ffprobe")
 
-# -------------------------------
+if ffmpeg_path:
+    AudioSegment.converter = ffmpeg_path
+    AudioSegment.ffmpeg = ffmpeg_path
+
+if ffprobe_path:
+    AudioSegment.ffprobe = ffprobe_path
+
+# -----------------------------------
 # PAGE SETTINGS
-# -------------------------------
+# -----------------------------------
 st.set_page_config(
     page_title="KavyaAI",
     page_icon="🎙️"
@@ -23,19 +32,9 @@ st.set_page_config(
 
 st.title("🎙️ KavyaAI - Hindi Poetry Narrator")
 
-# Debug information
-st.write(
-    "FFmpeg found:",
-    os.path.exists(r"C:\ffmpeg\bin\ffmpeg.exe")
-)
-st.write(
-    "FFprobe found:",
-    os.path.exists(r"C:\ffmpeg\bin\ffprobe.exe")
-)
-
-# -------------------------------
+# -----------------------------------
 # USER INPUT
-# -------------------------------
+# -----------------------------------
 poem = st.text_area(
     "Enter Hindi Poem",
     height=250,
@@ -73,9 +72,22 @@ pause = st.slider(
     0.1
 )
 
-# -------------------------------
+output_format = st.selectbox(
+    "Output Format",
+    [
+        "WAV",
+        "MP3"
+    ]
+)
+
+file_name = st.text_input(
+    "Output File Name",
+    value="kavya_output"
+)
+
+# -----------------------------------
 # TTS FUNCTION
-# -------------------------------
+# -----------------------------------
 async def generate_tts(text, voice_name, output_file):
     communicate = edge_tts.Communicate(
         text,
@@ -83,25 +95,22 @@ async def generate_tts(text, voice_name, output_file):
     )
     await communicate.save(output_file)
 
-# -------------------------------
+# -----------------------------------
 # GENERATE BUTTON
-# -------------------------------
+# -----------------------------------
 if st.button("Generate Narration"):
 
     if poem.strip() == "":
         st.warning("Please enter a poem.")
         st.stop()
 
-    lines = poem.split("\n")
+    lines = [line for line in poem.split("\n") if line.strip()]
 
     final_audio = AudioSegment.empty()
 
     progress = st.progress(0)
 
     for i, line in enumerate(lines):
-
-        if line.strip() == "":
-            continue
 
         with tempfile.NamedTemporaryFile(
             delete=False,
@@ -142,11 +151,11 @@ if st.button("Generate Narration"):
                 tmp_wav
             )
 
-            # Speed processing
             if speed > 1.0:
                 segment = segment.speedup(
                     playback_speed=speed
                 )
+
             elif speed < 1.0:
                 new_frame_rate = int(
                     segment.frame_rate * speed
@@ -168,6 +177,12 @@ if st.button("Generate Narration"):
                 )
             )
 
+            try:
+                os.remove(tmp_mp3)
+                os.remove(tmp_wav)
+            except:
+                pass
+
         except Exception as e:
             st.error(
                 f"Error processing line:\n{line}\n\n{e}"
@@ -178,13 +193,14 @@ if st.button("Generate Narration"):
             (i + 1) / len(lines)
         )
 
-    # Export as WAV first
-    output_file = "kavya_output.wav"
+    extension = output_format.lower()
+
+    output_file = f"{file_name}.{extension}"
 
     try:
         final_audio.export(
             output_file,
-            format="wav"
+            format=extension
         )
     except Exception as e:
         st.error(
@@ -196,10 +212,16 @@ if st.button("Generate Narration"):
 
     st.audio(output_file)
 
+    mime_type = (
+        "audio/mpeg"
+        if extension == "mp3"
+        else "audio/wav"
+    )
+
     with open(output_file, "rb") as f:
         st.download_button(
-            "Download Audio",
-            f,
-            file_name="kavya_output.wav",
-            mime="audio/wav"
+            label=f"Download {output_format}",
+            data=f,
+            file_name=output_file,
+            mime=mime_type
         )
