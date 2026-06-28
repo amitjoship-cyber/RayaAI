@@ -23,33 +23,74 @@ if ffprobe_path:
     AudioSegment.ffprobe = ffprobe_path
 
 # -----------------------------------
-# PAGE SETTINGS
+# Voice Library
+# -----------------------------------
+VOICE_OPTIONS = {
+    "Hindi - Madhur (Male)": "hi-IN-MadhurNeural",
+    "Hindi - Swara (Female)": "hi-IN-SwaraNeural",
+    "English India - Prabhat (Male)": "en-IN-PrabhatNeural",
+    "English India - Neerja (Female)": "en-IN-NeerjaNeural",
+    "English US - Jenny (Female)": "en-US-JennyNeural",
+    "English UK - Ryan (Male)": "en-GB-RyanNeural",
+}
+
+# -----------------------------------
+# Page Settings
 # -----------------------------------
 st.set_page_config(
-    page_title="KavyaAI",
-    page_icon="🎙️"
+    page_title="Raya Studio",
+    page_icon="🎙️",
+    layout="wide"
 )
 
-st.title("🎙️ KavyaAI - Hindi Poetry Narrator")
-
-# -----------------------------------
-# USER INPUT
-# -----------------------------------
-poem = st.text_area(
-    "Enter Hindi Poem",
-    height=250,
-    placeholder="यहाँ अपनी कविता लिखें..."
+st.title("🎙️ Raya Studio")
+st.caption(
+    "AI Narration Studio for Poetry, Stories and Audiobooks"
 )
 
-voice = st.selectbox(
-    "Voice",
+# -----------------------------------
+# Sidebar
+# -----------------------------------
+st.sidebar.header("⚙️ Narration Settings")
+
+language = st.sidebar.selectbox(
+    "Language",
     [
-        "hi-IN-MadhurNeural",
-        "hi-IN-SwaraNeural"
+        "Auto Detect",
+        "Hindi",
+        "English"
     ]
 )
 
-speed = st.slider(
+input_method = st.sidebar.radio(
+    "Input Method",
+    [
+        "Type",
+        "Speak (Coming Soon)",
+        "Hinglish Typing (Coming Soon)"
+    ]
+)
+
+voice_label = st.sidebar.selectbox(
+    "Voice",
+    list(VOICE_OPTIONS.keys())
+)
+
+voice = VOICE_OPTIONS[voice_label]
+
+emotion = st.sidebar.selectbox(
+    "Narration Style",
+    [
+        "Normal",
+        "Romantic",
+        "Sad",
+        "Inspirational",
+        "Patriotic",
+        "Spiritual"
+    ]
+)
+
+speed = st.sidebar.slider(
     "Speed",
     0.5,
     1.5,
@@ -57,14 +98,14 @@ speed = st.slider(
     0.05
 )
 
-pitch = st.slider(
+pitch = st.sidebar.slider(
     "Pitch",
     -4,
     4,
     0
 )
 
-pause = st.slider(
+pause = st.sidebar.slider(
     "Pause Between Lines (seconds)",
     0.5,
     3.0,
@@ -72,7 +113,7 @@ pause = st.slider(
     0.1
 )
 
-output_format = st.selectbox(
+output_format = st.sidebar.selectbox(
     "Output Format",
     [
         "WAV",
@@ -80,13 +121,36 @@ output_format = st.selectbox(
     ]
 )
 
-file_name = st.text_input(
+file_name = st.sidebar.text_input(
     "Output File Name",
-    value="kavya_output"
+    value="RayaStudio_Audio"
+)
+
+file_name = (
+    file_name
+    .replace(".mp3", "")
+    .replace(".wav", "")
+    .strip()
+)
+
+if not file_name:
+    file_name = "RayaStudio_Audio"
+
+# -----------------------------------
+# Main Text Area
+# -----------------------------------
+poem = st.text_area(
+    "Enter Text",
+    height=400,
+    placeholder="""
+Write or paste your poem, story or speech here...
+
+यहाँ अपनी कविता, कहानी या भाषण लिखें...
+"""
 )
 
 # -----------------------------------
-# TTS FUNCTION
+# TTS Function
 # -----------------------------------
 async def generate_tts(text, voice_name, output_file):
     communicate = edge_tts.Communicate(
@@ -96,15 +160,43 @@ async def generate_tts(text, voice_name, output_file):
     await communicate.save(output_file)
 
 # -----------------------------------
-# GENERATE BUTTON
+# Generate Button
 # -----------------------------------
-if st.button("Generate Narration"):
+if st.button(
+    "🎙️ Generate Narration",
+    use_container_width=True
+):
 
     if poem.strip() == "":
-        st.warning("Please enter a poem.")
+        st.warning("Please enter some text.")
         st.stop()
 
-    lines = [line for line in poem.split("\n") if line.strip()]
+    # Emotion presets
+    if emotion == "Romantic":
+        speed = 0.90
+        pitch = -1
+
+    elif emotion == "Sad":
+        speed = 0.85
+        pitch = -2
+
+    elif emotion == "Inspirational":
+        speed = 1.05
+        pitch = 1
+
+    elif emotion == "Patriotic":
+        speed = 1.10
+        pitch = 2
+
+    elif emotion == "Spiritual":
+        speed = 0.80
+        pitch = -1
+
+    lines = [
+        line
+        for line in poem.split("\n")
+        if line.strip()
+    ]
 
     final_audio = AudioSegment.empty()
 
@@ -171,6 +263,7 @@ if st.button("Generate Narration"):
                 )
 
             final_audio += segment
+
             final_audio += AudioSegment.silent(
                 duration=int(
                     pause * 1000
@@ -208,7 +301,9 @@ if st.button("Generate Narration"):
         )
         st.stop()
 
-    st.success("Narration generated successfully!")
+    st.success(
+        f"✅ {output_format} narration generated successfully!"
+    )
 
     st.audio(output_file)
 
@@ -220,8 +315,16 @@ if st.button("Generate Narration"):
 
     with open(output_file, "rb") as f:
         st.download_button(
-            label=f"Download {output_format}",
+            label=f"📥 Download {output_format}",
             data=f,
             file_name=output_file,
             mime=mime_type
         )
+
+# -----------------------------------
+# Footer
+# -----------------------------------
+st.markdown("---")
+st.caption(
+    "🎙️ Raya Studio • AI Narration Studio • Version 2.0"
+)
