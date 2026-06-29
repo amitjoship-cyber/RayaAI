@@ -11,6 +11,7 @@ from pydub import AudioSegment
 
 # -----------------------------------
 # Auto-detect FFmpeg
+# Works on Windows and Streamlit Cloud
 # -----------------------------------
 ffmpeg_path = shutil.which("ffmpeg")
 ffprobe_path = shutil.which("ffprobe")
@@ -18,10 +19,14 @@ ffprobe_path = shutil.which("ffprobe")
 if ffmpeg_path:
     AudioSegment.converter = ffmpeg_path
     AudioSegment.ffmpeg = ffmpeg_path
+else:
+    AudioSegment.converter = r"C:\ffmpeg\bin\ffmpeg.exe"
+    AudioSegment.ffmpeg = r"C:\ffmpeg\bin\ffmpeg.exe"
 
 if ffprobe_path:
     AudioSegment.ffprobe = ffprobe_path
-
+else:
+    AudioSegment.ffprobe = r"C:\ffmpeg\bin\ffprobe.exe"
 # -----------------------------------
 # Voice Library
 # -----------------------------------
@@ -42,16 +47,114 @@ st.set_page_config(
     page_icon="🎙️",
     layout="wide"
 )
+st.markdown("""
+<style>
 
-st.title("🎙️ Raya Studio")
-st.caption(
-    "AI Narration Studio for Poetry, Stories and Audiobooks"
-)
+/* Main Background */
+.stApp {
+    background: linear-gradient(
+        135deg,
+        #0f172a 0%,
+        #1e293b 100%
+    );
+    color: white;
+}
 
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+    border-right: 1px solid #374151;
+}
+
+/* Buttons */
+.stButton button {
+    width: 100%;
+    height: 55px;
+    border-radius: 15px;
+    border: none;
+    background: linear-gradient(
+        90deg,
+        #8b5cf6,
+        #3b82f6
+    );
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Text Area */
+.stTextArea textarea {
+    border-radius: 15px;
+    background-color: #1e293b;
+    color: white;
+    border: 1px solid #374151;
+}
+
+/* Input Boxes */
+.stTextInput input {
+    border-radius: 10px;
+}
+
+/* Select Box */
+.stSelectbox div[data-baseweb="select"] {
+    border-radius: 10px;
+}
+
+/* Slider */
+.stSlider {
+    padding-top: 10px;
+}
+
+/* Success Message */
+.stAlert {
+    border-radius: 15px;
+}
+            
+.stButton button:hover {
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+    box-shadow: 0px 6px 20px rgba(139, 92, 246, 0.5);
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div style="
+padding:35px;
+border-radius:20px;
+background:linear-gradient(
+90deg,
+#8b5cf6,
+#3b82f6
+);
+text-align:center;
+margin-bottom:20px;
+">
+<h1 style="color:white;">
+🎙️ Raya Studio
+</h1>
+<h4 style="color:white;">
+Create. Narrate. Inspire.
+</h4>
+<p style="color:white;">
+AI Voice Narrator for Poetry, Stories and Audiobooks
+</p>
+</div>
+""", unsafe_allow_html=True)
 # -----------------------------------
 # Sidebar
 # -----------------------------------
-st.sidebar.header("⚙️ Narration Settings")
+st.sidebar.markdown("## 🎛️ Narration Settings")
+st.sidebar.markdown("---")
+
+st.sidebar.markdown("### 🌐 Language")
+
+st.sidebar.markdown("### 🎙️ Voice")
+
+st.sidebar.markdown("### 🎚️ Audio Controls")
+
+st.sidebar.markdown("### 💾 Export")
 
 language = st.sidebar.selectbox(
     "Language",
@@ -90,28 +193,30 @@ emotion = st.sidebar.selectbox(
     ]
 )
 
-speed = st.sidebar.slider(
-    "Speed",
-    0.5,
-    1.5,
-    1.0,
-    0.05
-)
+with st.sidebar.expander("🎚️ Advanced Audio Controls"):
 
-pitch = st.sidebar.slider(
-    "Pitch",
-    -4,
-    4,
-    0
-)
+    speed = st.slider(
+        "Speed",
+        0.5,
+        1.5,
+        1.0,
+        0.05
+    )
 
-pause = st.sidebar.slider(
-    "Pause Between Lines (seconds)",
-    0.5,
-    3.0,
-    1.0,
-    0.1
-)
+    pitch = st.slider(
+        "Pitch",
+        -4,
+        4,
+        0
+    )
+
+    pause = st.slider(
+        "Pause Between Lines",
+        0.5,
+        3.0,
+        1.0,
+        0.1
+    )
 
 output_format = st.sidebar.selectbox(
     "Output Format",
@@ -149,6 +254,24 @@ Write or paste your poem, story or speech here...
 """
 )
 
+st.info(
+"""
+💡 Tips
+
+• Paste your poem or story.
+• Select a voice and narration style.
+• Generate and download your narration.
+
+Supports both English and Hindi.
+"""
+)
+
+st.caption(
+    f"📝 {len(poem)} characters | "
+    f"{len(poem.split())} words | "
+    f"{len(poem.splitlines())} lines"
+)
+
 # -----------------------------------
 # TTS Function
 # -----------------------------------
@@ -158,6 +281,32 @@ async def generate_tts(text, voice_name, output_file):
         voice_name
     )
     await communicate.save(output_file)
+
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric(
+        "Characters",
+        len(poem)
+    )
+
+with col2:
+    st.metric(
+        "Lines",
+        len(poem.splitlines())
+    )
+
+with col3:
+    estimated = max(
+        1,
+        len(poem.split()) // 130
+    )
+
+    st.metric(
+        "Est. Minutes",
+        estimated
+    )
 
 # -----------------------------------
 # Generate Button
@@ -301,30 +450,38 @@ if st.button(
         )
         st.stop()
 
-    st.success(
+        st.success(
         f"✅ {output_format} narration generated successfully!"
     )
 
-    st.audio(output_file)
+    with st.container(border=True):
+        st.subheader("🎧 Preview")
+        st.audio(output_file)
 
-    mime_type = (
-        "audio/mpeg"
-        if extension == "mp3"
-        else "audio/wav"
-    )
-
-    with open(output_file, "rb") as f:
-        st.download_button(
-            label=f"📥 Download {output_format}",
-            data=f,
-            file_name=output_file,
-            mime=mime_type
+        mime_type = (
+            "audio/mpeg"
+            if extension == "mp3"
+            else "audio/wav"
         )
+
+        with open(output_file, "rb") as f:
+            st.download_button(
+                label=f"📥 Download {output_format}",
+                data=f,
+                file_name=output_file,
+                mime=mime_type
+            )
 
 # -----------------------------------
 # Footer
 # -----------------------------------
 st.markdown("---")
-st.caption(
-    "🎙️ Raya Studio • AI Narration Studio • Version 2.0"
-)
+st.markdown("---")
+
+st.markdown("""
+<div style='text-align:center'>
+<h4>🎙️ Raya Studio</h4>
+<p>Create. Narrate. Inspire.</p>
+<p>Version 3.1</p>
+</div>
+""", unsafe_allow_html=True)
