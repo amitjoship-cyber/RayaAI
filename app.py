@@ -49,45 +49,81 @@ st.set_page_config(
 )
 st.markdown("""
 <style>
+            
+div[data-testid="stVerticalBlock"] > div:has(.glass-card) {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 20px;
+}
+
 
 /* Main Background */
 .stApp {
     background: linear-gradient(
-        135deg,
-        #0f172a 0%,
-        #1e293b 100%
+        -45deg,
+        #0f172a,
+        #1e3a8a,
+        #7c3aed,
+        #0f172a
     );
-    color: white;
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
 }
 
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
 /* Sidebar */
 section[data-testid="stSidebar"] {
-    background-color: #111827;
-    border-right: 1px solid #374151;
+    background: rgba(17, 24, 39, 0.9);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 5px 0px 30px rgba(0,0,0,0.4);
 }
 
 /* Buttons */
 .stButton button {
     width: 100%;
-    height: 55px;
-    border-radius: 15px;
+    height: 60px;
+    border-radius: 18px;
     border: none;
     background: linear-gradient(
         90deg,
         #8b5cf6,
-        #3b82f6
+        #3b82f6,
+        #06b6d4
     );
     color: white;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
+    box-shadow: 0px 8px 20px rgba(
+        139,
+        92,
+        246,
+        0.5
+    );
+    transition: all 0.3s ease;
 }
 
 /* Text Area */
 .stTextArea textarea {
-    border-radius: 15px;
-    background-color: #1e293b;
+    border-radius: 20px;
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(15px);
     color: white;
-    border: 1px solid #374151;
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 15px;
+    box-shadow: 0px 8px 30px rgba(0,0,0,0.3);
 }
 
 /* Input Boxes */
@@ -111,22 +147,27 @@ section[data-testid="stSidebar"] {
 }
             
 .stButton button:hover {
-    transform: scale(1.02);
-    transition: all 0.3s ease;
-    box-shadow: 0px 6px 20px rgba(139, 92, 246, 0.5);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0px 12px 30px rgba(
+        59,
+        130,
+        246,
+        0.6
+    );
 }
-
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div style="
-padding:35px;
-border-radius:20px;
+padding:50px;
+border-radius:25px;
+box-shadow:0px 10px 35px rgba(0,0,0,0.4);
 background:linear-gradient(
 90deg,
 #8b5cf6,
-#3b82f6
+#3b82f6,
+#06b6d4
 );
 text-align:center;
 margin-bottom:20px;
@@ -143,7 +184,7 @@ AI Voice Narrator for Poetry, Stories and Audiobooks
 </div>
 """, unsafe_allow_html=True)
 # -----------------------------------
-# Sidebar
+# Sidebarbar
 # -----------------------------------
 st.sidebar.markdown("## 🎛️ Narration Settings")
 st.sidebar.markdown("---")
@@ -282,7 +323,7 @@ async def generate_tts(text, voice_name, output_file):
     )
     await communicate.save(output_file)
 
-
+st.markdown("### 📊 Text Statistics")
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -440,21 +481,24 @@ if st.button(
     output_file = f"{file_name}.{extension}"
 
     try:
-        final_audio.export(
-            output_file,
-            format=extension
-        )
-    except Exception as e:
-        st.error(
-            f"Export failed:\n{e}"
-        )
-        st.stop()
-
-        st.success(
-        f"✅ {output_format} narration generated successfully!"
+    final_audio.export(
+        output_file,
+        format=extension
     )
+except Exception as e:
+    st.error(
+        f"Export failed:\n{e}"
+    )
+    st.stop()
 
-    with st.container(border=True):
+st.balloons()
+
+st.success(
+    f"🎉 Your {output_format} narration is ready!"
+)
+
+st.markdown("## 🎧 Audio Preview")
+with st.container(border=True):
         st.subheader("🎧 Preview")
         st.audio(output_file)
 
@@ -464,6 +508,7 @@ if st.button(
             else "audio/wav"
         )
 
+        st.divider()
         with open(output_file, "rb") as f:
             st.download_button(
                 label=f"📥 Download {output_format}",
@@ -479,9 +524,14 @@ st.markdown("---")
 st.markdown("---")
 
 st.markdown("""
-<div style='text-align:center'>
-<h4>🎙️ Raya Studio</h4>
+<div style="
+text-align:center;
+padding:20px;
+opacity:0.8;
+">
+<h3>🎙️ Raya Studio</h3>
 <p>Create. Narrate. Inspire.</p>
-<p>Version 3.1</p>
+<p>Version 3.2</p>
+<p>Made with ❤️ using Streamlit and Edge TTS</p>
 </div>
 """, unsafe_allow_html=True)
