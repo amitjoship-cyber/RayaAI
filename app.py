@@ -47,6 +47,9 @@ st.set_page_config(
     page_icon="🎙️",
     layout="wide"
 )
+
+if "theme" not in st.session_state:
+    st.session_state.theme = "Purple"
 st.markdown("""
 <style>
             
@@ -59,19 +62,20 @@ div[data-testid="stVerticalBlock"] > div:has(.glass-card) {
 }
 
 
-/* Main Background */
 .stApp {
-    background: linear-gradient(
+    background:
+    linear-gradient(
         -45deg,
         #0f172a,
-        #1e3a8a,
         #7c3aed,
+        #3b82f6,
         #0f172a
     );
+
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
 }
-
+            
 @keyframes gradient {
     0% {
         background-position: 0% 50%;
@@ -197,6 +201,15 @@ st.sidebar.markdown("### 🎚️ Audio Controls")
 
 st.sidebar.markdown("### 💾 Export")
 
+theme = st.sidebar.selectbox(
+    "🎨 Theme",
+    [
+        "Purple",
+        "Blue",
+        "Dark"
+    ]
+)
+
 language = st.sidebar.selectbox(
     "Language",
     [
@@ -285,8 +298,19 @@ if not file_name:
 # -----------------------------------
 # Main Text Area
 # -----------------------------------
+uploaded_file = st.file_uploader(
+    "📂 Upload a text file",
+    type=["txt"]
+)
+
+if uploaded_file:
+    poem = uploaded_file.read().decode("utf-8")
+else:
+    poem = ""
+
 poem = st.text_area(
     "Enter Text",
+    value=st.session_state.get("sample", poem)value=st.session_state.get("sample", poem)
     height=400,
     placeholder="""
 Write or paste your poem, story or speech here...
@@ -294,6 +318,20 @@ Write or paste your poem, story or speech here...
 यहाँ अपनी कविता, कहानी या भाषण लिखें...
 """
 )
+
+c1, c2 = st.columns(2)
+
+with c1:
+    if st.button("📝 Load Sample"):
+        st.session_state["sample"] = """
+मैं भारत हूँ।
+I am the voice of dreams.
+This is Raya Studio.
+"""
+
+with c2:
+    if st.button("🗑 Clear Text"):
+        st.session_state["sample"] = ""
 
 st.info(
 """
@@ -324,7 +362,28 @@ async def generate_tts(text, voice_name, output_file):
     await communicate.save(output_file)
 
 st.markdown("### 📊 Text Statistics")
+col1, col2, col3 = st.columns(3)st.markdown("### 📊 Text Statistics")
+
 col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric(
+        "📝 Characters",
+        len(poem)
+    )
+
+with col2:
+    st.metric(
+        "📄 Words",
+        len(poem.split())
+    )
+
+with col3:
+    st.metric(
+        "⏱ Estimated Minutes",
+        max(1, len(poem.split()) // 130)
+    )
+     
 
 with col1:
     st.metric(
@@ -534,7 +593,7 @@ opacity:0.8;
 ">
 <h3>🎙️ Raya Studio</h3>
 <p>Create. Narrate. Inspire.</p>
-<p>Version 3.2</p>
-<p>Made with ❤️ using Streamlit and Edge TTS</p>
+<p>Version 3.3 Premium Edition</p>
+<p>Made with ❤️ in India</p>
 </div>
 """, unsafe_allow_html=True)
