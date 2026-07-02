@@ -104,19 +104,18 @@ section[data-testid="stSidebar"] {
     border-radius: 18px;
     border: none;
     background: linear-gradient(
-        90deg,
-        #8b5cf6,
-        #3b82f6,
-        #06b6d4
+    90deg,
+    #10b981,
+    #06b6d4
     );
     color: white;
     font-size: 20px;
     font-weight: bold;
     box-shadow: 0px 8px 20px rgba(
-        139,
-        92,
-        246,
-        0.5
+    16,
+    185,
+    129,
+    0.45
     );
     transition: all 0.3s ease;
 }
