@@ -8,6 +8,8 @@ import librosa
 import soundfile as sf
 
 from pydub import AudioSegment
+from docx import Document
+from pypdf import PdfReader
 
 # -----------------------------------
 # Auto-detect FFmpeg
@@ -173,6 +175,7 @@ background:linear-gradient(
 #3b82f6,
 #06b6d4
 );
+        
 text-align:center;
 margin-bottom:15px;
 ">
@@ -279,6 +282,15 @@ with st.sidebar.expander("🎚️ Advanced Audio Controls"):
         0.1
     )
 
+background_music = st.sidebar.selectbox(
+    "🎵 Background Music",
+    [
+        "None",
+        "Soft Piano",
+        "Rain",
+        "Meditation"
+    ]
+)
 output_format = st.sidebar.selectbox(
     "Output Format",
     [
@@ -311,6 +323,21 @@ theme = st.sidebar.selectbox(
     ]
 )
 
+if theme == "Purple":
+    primary1 = "#8b5cf6"
+    primary2 = "#3b82f6"
+    primary3 = "#06b6d4"
+
+elif theme == "Blue":
+    primary1 = "#2563eb"
+    primary2 = "#0891b2"
+    primary3 = "#06b6d4"
+
+elif theme == "Dark":
+    primary1 = "#111827"
+    primary2 = "#1f2937"
+    primary3 = "#374151"
+
 # -----------------------------------
 # TTS Function
 # -----------------------------------
@@ -325,13 +352,32 @@ async def generate_tts(text, voice_name, output_file):
 # Main Text Area
 # -----------------------------------
 uploaded_file = st.file_uploader(
-    "📂 Upload a Text File",
-    type=["txt"],
+    "📂 Upload File",
+    type=["txt", "docx", "pdf"],
     key="uploaded_file"
 )
 
 if uploaded_file:
-    poem = uploaded_file.read().decode("utf-8")
+
+    if uploaded_file.name.endswith(".txt"):
+        poem = uploaded_file.read().decode("utf-8")
+
+    elif uploaded_file.name.endswith(".docx"):
+        doc = Document(uploaded_file)
+        poem = "\n".join(
+            para.text
+            for para in doc.paragraphs
+        )
+
+    elif uploaded_file.name.endswith(".pdf"):
+        reader = PdfReader(uploaded_file)
+        poem = ""
+
+        for page in reader.pages:
+            text = page.extract_text()
+            if text:
+                poem += text + "\n"
+
 else:
     poem = ""
 
@@ -493,26 +539,66 @@ if st.button(
 
     extension = output_format.lower()
 
+    if background_music != "None":
+
+        music_file = {
+            "Soft Piano": "assets/music/piano.mp3",
+            "Rain": "assets/music/rain.mp3",
+            "Meditation": "assets/music/meditation.mp3"
+        }[background_music]
+
+        bg_music = AudioSegment.from_file(music_file)
+
+    # Lower volume
+    bg_music = bg_music - 20
+    
+    while len(bg_music) < len(final_audio):
+        bg_music += bg_music
+
+    bg_music = bg_music[:len(final_audio)]
+
+    final_audio = final_audio.overlay(bg_music)
+
+    extension = output_format.lower()
     output_file = f"{file_name}.{extension}"
 
-    try:
-        final_audio.export(
-            output_file,
-            format=extension
-        )
-    except Exception as e:
-        st.error(
-            f"Export failed:\n{e}"
-        )
-        st.stop()
+try:
+    final_audio.export(
+        output_file,
+        format=extension
+    )
+except Exception as e:
+    st.error(f"Export failed:\n{e}")
+    st.stop()
 
-    st.balloons()
+st.balloons()
 
-    st.success(
-        f"🎉 Your {output_format} narration is ready!"
+st.success(
+    f"🎉 Your {output_format} narration is ready!"
+)
+
+st.markdown("## 🎧 Audio Preview")
+
+with st.container(border=True):
+    st.subheader("🎧 Preview")
+    st.audio(output_file)
+
+    mime_type = (
+        "audio/mpeg"
+        if extension == "mp3"
+        else "audio/wav"
     )
 
-    st.markdown("## 🎧 Audio Preview")
+    st.divider()
+
+    with open(output_file, "rb") as f:
+        st.download_button(
+            label=f"📥 Download {output_format}",
+            data=f,
+            file_name=output_file,
+            mime=mime_type,
+            use_container_width=True
+        )
 
     with st.container(border=True):
         st.subheader("🎧 Preview")
