@@ -174,11 +174,11 @@ background:linear-gradient(
 #8b5cf6,
 #3b82f6,
 #06b6d4
-);
-        
+);    
 text-align:center;
 margin-bottom:15px;
 ">
+""", unsafe_allow_html=True)
             
 <h1 style="
 color:white;
