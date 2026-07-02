@@ -193,13 +193,13 @@ AI Voice Narrator for Poetry, Stories and Audiobooks
 st.sidebar.markdown("## 🎛️ Narration Settings")
 st.sidebar.markdown("---")
 
-st.sidebar.markdown("### 🌐 Language")
+#st.sidebar.markdown("### 🌐 Language")
 
-st.sidebar.markdown("### 🎙️ Voice")
+#st.sidebar.markdown("### 🎙️ Voice")
 
-st.sidebar.markdown("### 🎚️ Audio Controls")
+#st.sidebar.markdown("### 🎚️ Audio Controls")
 
-st.sidebar.markdown("### 💾 Export")
+#st.sidebar.markdown("### 💾 Export")
 
 theme = st.sidebar.selectbox(
     "🎨 Theme",
@@ -275,8 +275,8 @@ with st.sidebar.expander("🎚️ Advanced Audio Controls"):
 output_format = st.sidebar.selectbox(
     "Output Format",
     [
-        "WAV",
-        "MP3"
+        "MP3",
+        "WAV"
     ]
 )
 
@@ -343,67 +343,6 @@ st.info(
 Supports both English and Hindi.
 """
 )
-
-st.caption(
-    f"📝 {len(poem)} characters | "
-    f"{len(poem.split())} words | "
-    f"{len(poem.splitlines())} lines"
-)
-
-# -----------------------------------
-# TTS Function
-# -----------------------------------
-async def generate_tts(text, voice_name, output_file):
-    communicate = edge_tts.Communicate(
-        text,
-        voice_name
-    )
-    await communicate.save(output_file)
-
-st.markdown("### 📊 Text Statistics")
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.metric(
-        "📝 Characters",
-        len(poem)
-    )
-
-with col2:
-    st.metric(
-        "📄 Words",
-        len(poem.split())
-    )
-
-with col3:
-    st.metric(
-        "⏱ Estimated Minutes",
-        max(1, len(poem.split()) // 130)
-    )
-     
-
-with col1:
-    st.metric(
-        "Characters",
-        len(poem)
-    )
-
-with col2:
-    st.metric(
-        "Lines",
-        len(poem.splitlines())
-    )
-
-with col3:
-    estimated = max(
-        1,
-        len(poem.split()) // 130
-    )
-
-    st.metric(
-        "Est. Minutes",
-        estimated
-    )
 
 # -----------------------------------
 # Generate Button
@@ -575,6 +514,69 @@ if st.button(
                 mime=mime_type,
                 use_container_width=True
             )
+
+
+st.caption(
+    f"📝 {len(poem)} characters | "
+    f"{len(poem.split())} words | "
+    f"{len(poem.splitlines())} lines"
+)
+
+# -----------------------------------
+# TTS Function
+# -----------------------------------
+async def generate_tts(text, voice_name, output_file):
+    communicate = edge_tts.Communicate(
+        text,
+        voice_name
+    )
+    await communicate.save(output_file)
+
+st.markdown("### 📊 Text Statistics")
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric(
+        "📝 Characters",
+        len(poem)
+    )
+
+with col2:
+    st.metric(
+        "📄 Words",
+        len(poem.split())
+    )
+
+with col3:
+    st.metric(
+        "⏱ Estimated Minutes",
+        max(1, len(poem.split()) // 130)
+    )
+     
+
+with col1:
+    st.metric(
+        "Characters",
+        len(poem)
+    )
+
+with col2:
+    st.metric(
+        "Lines",
+        len(poem.splitlines())
+    )
+
+with col3:
+    estimated = max(
+        1,
+        len(poem.split()) // 130
+    )
+
+    st.metric(
+        "Est. Minutes",
+        estimated
+    )
+
 
 # -----------------------------------
 # Footer
