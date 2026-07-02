@@ -201,14 +201,6 @@ st.sidebar.markdown("---")
 
 #st.sidebar.markdown("### 💾 Export")
 
-theme = st.sidebar.selectbox(
-    "🎨 Theme",
-    [
-        "Purple",
-        "Blue",
-        "Dark"
-    ]
-)
 
 language = st.sidebar.selectbox(
     "Language",
@@ -295,12 +287,32 @@ file_name = (
 if not file_name:
     file_name = "RayaStudio_Audio"
 
+theme = st.sidebar.selectbox(
+    "🎨 Theme",
+    [
+        "Purple",
+        "Blue",
+        "Dark"
+    ]
+)
+
+# -----------------------------------
+# TTS Function
+# -----------------------------------
+async def generate_tts(text, voice_name, output_file):
+    communicate = edge_tts.Communicate(
+        text,
+        voice_name
+    )
+    await communicate.save(output_file)
+
 # -----------------------------------
 # Main Text Area
 # -----------------------------------
 uploaded_file = st.file_uploader(
-    "📂 Upload a text file",
-    type=["txt"]
+    "📂 Upload a Text File",
+    type=["txt"],
+    key="uploaded_file"
 )
 
 if uploaded_file:
@@ -318,31 +330,24 @@ Write or paste your poem, story or speech here...
 यहाँ अपनी कविता, कहानी या भाषण लिखें...
 """
 )
-c1, c2 = st.columns(2)
+c1, c2 = st.columns([1,1], gap="medium")
 
 with c1:
-    if st.button("📝 Load Sample"):
+    if st.button("📝 Load Sample", use_container_width=True):
         st.session_state["sample"] = """
 मैं भारत हूँ।
 I am the voice of dreams.
 This is Raya Studio.
 """
+        st.rerun()
 
 with c2:
-    if st.button("🗑 Clear Text"):
-        st.session_state["sample"] = ""
+    if st.button("🗑 Clear Text", use_container_width=True):
+        st.session_state.sample = ""
+        st.session_state.poem = ""
+        st.session_state.uploaded_file = None
+        st.rerun()
 
-st.info(
-"""
-💡 Tips
-
-• Paste your poem or story.
-• Select a voice and narration style.
-• Generate and download your narration.
-
-Supports both English and Hindi.
-"""
-)
 
 # -----------------------------------
 # Generate Button
@@ -522,17 +527,20 @@ st.caption(
     f"{len(poem.splitlines())} lines"
 )
 
-# -----------------------------------
-# TTS Function
-# -----------------------------------
-async def generate_tts(text, voice_name, output_file):
-    communicate = edge_tts.Communicate(
-        text,
-        voice_name
-    )
-    await communicate.save(output_file)
+st.info(
+"""
+💡 Tips
+
+• Paste your poem or story.
+• Select a voice and narration style.
+• Generate and download your narration.
+
+Supports both English and Hindi.
+"""
+)
 
 st.markdown("### 📊 Text Statistics")
+
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -549,33 +557,11 @@ with col2:
 
 with col3:
     st.metric(
-        "⏱ Estimated Minutes",
+        "⏱ Est. Minutes",
         max(1, len(poem.split()) // 130)
     )
-     
 
-with col1:
-    st.metric(
-        "Characters",
-        len(poem)
-    )
 
-with col2:
-    st.metric(
-        "Lines",
-        len(poem.splitlines())
-    )
-
-with col3:
-    estimated = max(
-        1,
-        len(poem.split()) // 130
-    )
-
-    st.metric(
-        "Est. Minutes",
-        estimated
-    )
 
 
 # -----------------------------------
