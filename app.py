@@ -164,9 +164,9 @@ section[data-testid="stSidebar"] {
 
 st.markdown("""
 <div style="
-padding:50px;
-border-radius:25px;
-box-shadow:0px 10px 35px rgba(0,0,0,0.4);
+padding:20px;
+border-radius:20px;
+box-shadow:0px 8px 25px rgba(0,0,0,0.35);
 background:linear-gradient(
 90deg,
 #8b5cf6,
@@ -174,15 +174,30 @@ background:linear-gradient(
 #06b6d4
 );
 text-align:center;
-margin-bottom:20px;
+margin-bottom:15px;
 ">
-<h1 style="color:white;">
+            
+<h1 style="
+color:white;
+font-size:50px;
+margin-bottom:10px;
+">
 🎙️ Raya Studio
 </h1>
-<h4 style="color:white;">
+
+<h3 style="
+color:white;
+margin-top:0px;
+margin-bottom:10px;
+">
 Create. Narrate. Inspire.
-</h4>
-<p style="color:white;">
+</h3>
+
+<p style="
+color:white;
+font-size:20px;
+margin-bottom:0px;
+">
 AI Voice Narrator for Poetry, Stories and Audiobooks
 </p>
 </div>
