@@ -361,8 +361,6 @@ async def generate_tts(text, voice_name, output_file):
     await communicate.save(output_file)
 
 st.markdown("### 📊 Text Statistics")
-col1, col2, col3 = st.columns(3)st.markdown("### 📊 Text Statistics")
-
 col1, col2, col3 = st.columns(3)
 
 with col1:
