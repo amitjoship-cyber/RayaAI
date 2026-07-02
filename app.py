@@ -178,8 +178,8 @@ background:linear-gradient(
 text-align:center;
 margin-bottom:15px;
 ">
-""", unsafe_allow_html=True)
-            
+"", unsafe_allow_html=True)
+
 <h1 style="
 color:white;
 font-size:50px;
