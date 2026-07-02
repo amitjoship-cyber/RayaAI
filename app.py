@@ -310,7 +310,7 @@ else:
 
 poem = st.text_area(
     "Enter Text",
-    value=st.session_state.get("sample", poem)value=st.session_state.get("sample", poem)
+    value=st.session_state.get("sample", poem)
     height=400,
     placeholder="""
 Write or paste your poem, story or speech here...
