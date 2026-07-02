@@ -310,7 +310,7 @@ else:
 
 poem = st.text_area(
     "Enter Text",
-    value=st.session_state.get("sample", poem)
+    value=st.session_state.get("sample", poem),
     height=400,
     placeholder="""
 Write or paste your poem, story or speech here...
@@ -318,7 +318,6 @@ Write or paste your poem, story or speech here...
 यहाँ अपनी कविता, कहानी या भाषण लिखें...
 """
 )
-
 c1, c2 = st.columns(2)
 
 with c1:
