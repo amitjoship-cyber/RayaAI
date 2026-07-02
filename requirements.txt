@@ -1,7 +1,8 @@
-streamlit
 edge-tts
 pydub
 librosa
 soundfile
 numpy
 scipy
+python-docx
+pypdf
