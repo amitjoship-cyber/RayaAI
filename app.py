@@ -5,6 +5,7 @@ import tempfile
 import os
 import shutil
 import librosa
+import glob
 import soundfile as sf
 
 from pydub import AudioSegment
@@ -165,22 +166,36 @@ section[data-testid="stSidebar"] {
 
 st.markdown("""
 <div style="
-padding:20px;
-border-radius:20px;
-box-shadow:0px 8px 25px rgba(0,0,0,0.35);
-background:linear-gradient(90deg,#8b5cf6,#3b82f6,#06b6d4);
+padding:12px;
+border-radius:18px;
+box-shadow:0px 6px 20px rgba(0,0,0,0.30);
+background:linear-gradient(
+90deg,
+#8b5cf6,
+#3b82f6,
+#06b6d4
+);
 text-align:center;
-margin-bottom:15px;">
+margin-bottom:10px;
+">
             
-<h1 style="color:white;font-size:50px;margin-bottom:10px;">
+<h1 style="
+color:white;
+font-size:36px;
+margin-bottom:5px;
+">
 🎙️ Raya Studio
 </h1>
-
-<h3 style="color:white;margin-top:0px;margin-bottom:10px;">
+            
+<h3 style="color:white;margin-top:0px;font-size:18px;margin-bottom:10px;">
 Create. Narrate. Inspire.
 </h3>
 
-<p style="color:white;font-size:20px;margin-bottom:0px;">
+<p style="
+color:#E5E7EB;
+font-size:14px;
+margin-top:5px;
+">
 AI Voice Narrator for Poetry, Stories and Audiobooks
 </p>
 </div>
@@ -263,15 +278,23 @@ with st.sidebar.expander("🎚️ Advanced Audio Controls"):
         0.1
     )
 
-background_music = st.sidebar.selectbox(
+music_files = glob.glob("assets/music/*")
+
+music_options = ["None"] + [
+    os.path.basename(f)
+    for f in music_files
+]
+
+background_music = st.selectbox(
     "🎵 Background Music",
-    [
-        "None",
-        "Soft Piano",
-        "Rain",
-        "Meditation"
-    ]
+    music_options
 )
+
+uploaded_music = st.file_uploader(
+    "📂 Upload Your Own Background Music",
+    type=["mp3", "wav"]
+)
+
 output_format = st.sidebar.selectbox(
     "Output Format",
     [
@@ -399,6 +422,7 @@ if st.button(
     use_container_width=True
 ):
 
+
     if poem.strip() == "":
         st.warning("Please enter some text.")
         st.stop()
@@ -520,15 +544,26 @@ if st.button(
 
     extension = output_format.lower()
         
-    if background_music != "None":
+    if background_music != "None" or uploaded_music:
 
-        music_file = {
-            "Soft Piano": "assets/music/piano.mp3",
-            "Rain": "assets/music/rain.mp3",
-            "Meditation": "assets/music/meditation.mp3"
-        }[background_music]
+        music_file = os.path.join(
+    "assets/music",
+    background_music
+)
 
-        bg_music = AudioSegment.from_file(music_file)
+        if uploaded_music:
+            bg_music = AudioSegment.from_file(
+                uploaded_music
+            )
+        else:
+            music_file = os.path.join(
+                "assets/music",
+                background_music
+            )
+
+            bg_music = AudioSegment.from_file(
+            music_file
+         )
 
         bg_music = bg_music - 20
 
