@@ -519,7 +519,7 @@ if st.button(
         )
 
     extension = output_format.lower()
-
+        
     if background_music != "None":
 
         music_file = {
@@ -530,39 +530,37 @@ if st.button(
 
         bg_music = AudioSegment.from_file(music_file)
 
-    # Lower volume
-    bg_music = bg_music - 20
-    
-    while len(bg_music) < len(final_audio):
-        bg_music += bg_music
+        bg_music = bg_music - 20
 
-    bg_music = bg_music[:len(final_audio)]
+        while len(bg_music) < len(final_audio):
+            bg_music += bg_music
 
-    final_audio = final_audio.overlay(bg_music)
+        bg_music = bg_music[:len(final_audio)]
+
+        final_audio = final_audio.overlay(bg_music)
 
     extension = output_format.lower()
     output_file = f"{file_name}.{extension}"
 
-try:
-    final_audio.export(
-        output_file,
-        format=extension
+    try:
+        final_audio.export(
+            output_file,
+            format=extension
+        )
+    except Exception as e:
+        st.error(f"Export failed:\n{e}")
+        st.stop()
+
+    st.balloons()
+    st.success(
+        f"🎉 Your {output_format} narration is ready!"
     )
-except Exception as e:
-    st.error(f"Export failed:\n{e}")
-    st.stop()
 
-st.balloons()
+    st.markdown("## 🎧 Audio Preview")
 
-st.success(
-    f"🎉 Your {output_format} narration is ready!"
-)
-
-st.markdown("## 🎧 Audio Preview")
-
-with st.container(border=True):
-    st.subheader("🎧 Preview")
-    st.audio(output_file)
+    with st.container(border=True):
+       st.subheader("🎧 Preview")
+       st.audio(output_file)
 
     mime_type = (
         "audio/mpeg"
@@ -580,27 +578,6 @@ with st.container(border=True):
             mime=mime_type,
             use_container_width=True
         )
-
-    with st.container(border=True):
-        st.subheader("🎧 Preview")
-        st.audio(output_file)
-
-        mime_type = (
-            "audio/mpeg"
-            if extension == "mp3"
-            else "audio/wav"
-        )
-
-        st.divider()
-
-        with open(output_file, "rb") as f:
-            st.download_button(
-                label=f"📥 Download {output_format}",
-                data=f,
-                file_name=output_file,
-                mime=mime_type,
-                use_container_width=True
-            )
 
 
 st.caption(
