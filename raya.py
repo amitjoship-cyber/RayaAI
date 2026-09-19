@@ -282,8 +282,12 @@ elif theme == "Dark":
 # TTS Function
 # -----------------------------------
 async def generate_tts(text, voice_name, output_file):
+    print("TTS VOICE:", voice_name)
+    print("TTS TEXT:", repr(text[:100]))
+
     communicate = edge_tts.Communicate(text, voice_name)
     await communicate.save(output_file)
+    print("TTS FILE:", output_file, os.path.getsize(output_file))
 
 
 # -----------------------------------
