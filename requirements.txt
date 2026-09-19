@@ -1,8 +1,10 @@
 edge-tts
 pydub
+audioop-lts
 librosa
 soundfile
 numpy
 scipy
 python-docx
 pypdf
+pyaudioop
