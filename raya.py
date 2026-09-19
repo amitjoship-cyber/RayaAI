@@ -8,6 +8,15 @@ import librosa
 import glob
 import soundfile as sf
 
+import sys
+
+try:
+    import audioop
+except ModuleNotFoundError:
+    import pyaudioop as audioop
+
+    sys.modules["audioop"] = audioop
+
 from pydub import AudioSegment
 from docx import Document
 from pypdf import PdfReader
@@ -45,15 +54,12 @@ VOICE_OPTIONS = {
 # -----------------------------------
 # Page Settings
 # -----------------------------------
-st.set_page_config(
-    page_title="Raya Studio",
-    page_icon="🎙️",
-    layout="wide"
-)
+st.set_page_config(page_title="Raya Studio", page_icon="🎙️", layout="wide")
 
 if "theme" not in st.session_state:
     st.session_state.theme = "Purple"
-st.markdown("""
+st.markdown(
+    """
 <style>
             
 div[data-testid="stVerticalBlock"] > div:has(.glass-card) {
@@ -162,9 +168,12 @@ section[data-testid="stSidebar"] {
     );
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
-st.markdown("""
+st.markdown(
+    """
 <div style="
 padding:12px;
 border-radius:18px;
@@ -199,7 +208,9 @@ margin-top:5px;
 AI Voice Narrator for Poetry, Stories and Audiobooks
 </p>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # -----------------------------------
 # Sidebarbar
@@ -207,125 +218,58 @@ AI Voice Narrator for Poetry, Stories and Audiobooks
 st.sidebar.markdown("## 🎛️ Narration Settings")
 st.sidebar.markdown("---")
 
-#st.sidebar.markdown("### 🌐 Language")
+# st.sidebar.markdown("### 🌐 Language")
 
-#st.sidebar.markdown("### 🎙️ Voice")
+# st.sidebar.markdown("### 🎙️ Voice")
 
-#st.sidebar.markdown("### 🎚️ Audio Controls")
+# st.sidebar.markdown("### 🎚️ Audio Controls")
 
-#st.sidebar.markdown("### 💾 Export")
+# st.sidebar.markdown("### 💾 Export")
 
 
-language = st.sidebar.selectbox(
-    "Language",
-    [
-        "Auto Detect",
-        "Hindi",
-        "English"
-    ]
-)
+language = st.sidebar.selectbox("Language", ["Auto Detect", "Hindi", "English"])
 
 input_method = st.sidebar.radio(
-    "Input Method",
-    [
-        "Type",
-        "Speak (Coming Soon)",
-        "Hinglish Typing (Coming Soon)"
-    ]
+    "Input Method", ["Type", "Speak (Coming Soon)", "Hinglish Typing (Coming Soon)"]
 )
 
-voice_label = st.sidebar.selectbox(
-    "Voice",
-    list(VOICE_OPTIONS.keys())
-)
+voice_label = st.sidebar.selectbox("Voice", list(VOICE_OPTIONS.keys()))
 
 voice = VOICE_OPTIONS[voice_label]
 
 emotion = st.sidebar.selectbox(
     "Narration Style",
-    [
-        "Normal",
-        "Romantic",
-        "Sad",
-        "Inspirational",
-        "Patriotic",
-        "Spiritual"
-    ]
+    ["Normal", "Romantic", "Sad", "Inspirational", "Patriotic", "Spiritual"],
 )
 
 with st.sidebar.expander("🎚️ Advanced Audio Controls"):
 
-    speed = st.slider(
-        "Speed",
-        0.5,
-        1.5,
-        1.0,
-        0.05
-    )
+    speed = st.slider("Speed", 0.5, 1.5, 1.0, 0.05)
 
-    pitch = st.slider(
-        "Pitch",
-        -4,
-        4,
-        0
-    )
+    pitch = st.slider("Pitch", -4, 4, 0)
 
-    pause = st.slider(
-        "Pause Between Lines",
-        0.5,
-        3.0,
-        1.0,
-        0.1
-    )
+    pause = st.slider("Pause Between Lines", 0.5, 3.0, 1.0, 0.1)
 
 music_files = glob.glob("assets/music/*")
 
-music_options = ["None"] + [
-    os.path.basename(f)
-    for f in music_files
-]
+music_options = ["None"] + [os.path.basename(f) for f in music_files]
 
-background_music = st.selectbox(
-    "🎵 Background Music",
-    music_options
-)
+background_music = st.selectbox("🎵 Background Music", music_options)
 
 uploaded_music = st.file_uploader(
-    "📂 Upload Your Own Background Music",
-    type=["mp3", "wav"]
+    "📂 Upload Your Own Background Music", type=["mp3", "wav"]
 )
 
-output_format = st.sidebar.selectbox(
-    "Output Format",
-    [
-        "MP3",
-        "WAV"
-    ]
-)
+output_format = st.sidebar.selectbox("Output Format", ["MP3", "WAV"])
 
-file_name = st.sidebar.text_input(
-    "Output File Name",
-    value="RayaStudio_Audio"
-)
+file_name = st.sidebar.text_input("Output File Name", value="RayaStudio_Audio")
 
-file_name = (
-    file_name
-    .replace(".mp3", "")
-    .replace(".wav", "")
-    .strip()
-)
+file_name = file_name.replace(".mp3", "").replace(".wav", "").strip()
 
 if not file_name:
     file_name = "RayaStudio_Audio"
 
-theme = st.sidebar.selectbox(
-    "🎨 Theme",
-    [
-        "Purple",
-        "Blue",
-        "Dark"
-    ]
-)
+theme = st.sidebar.selectbox("🎨 Theme", ["Purple", "Blue", "Dark"])
 
 if theme == "Purple":
     primary1 = "#8b5cf6"
@@ -342,23 +286,20 @@ elif theme == "Dark":
     primary2 = "#1f2937"
     primary3 = "#374151"
 
+
 # -----------------------------------
 # TTS Function
 # -----------------------------------
 async def generate_tts(text, voice_name, output_file):
-    communicate = edge_tts.Communicate(
-        text,
-        voice_name
-    )
+    communicate = edge_tts.Communicate(text, voice_name)
     await communicate.save(output_file)
+
 
 # -----------------------------------
 # Main Text Area
 # -----------------------------------
 uploaded_file = st.file_uploader(
-    "📂 Upload File",
-    type=["txt", "docx", "pdf"],
-    key="uploaded_file"
+    "📂 Upload File", type=["txt", "docx", "pdf"], key="uploaded_file"
 )
 
 if uploaded_file:
@@ -368,10 +309,7 @@ if uploaded_file:
 
     elif uploaded_file.name.endswith(".docx"):
         doc = Document(uploaded_file)
-        poem = "\n".join(
-            para.text
-            for para in doc.paragraphs
-        )
+        poem = "\n".join(para.text for para in doc.paragraphs)
 
     elif uploaded_file.name.endswith(".pdf"):
         reader = PdfReader(uploaded_file)
@@ -393,9 +331,9 @@ poem = st.text_area(
 Write or paste your poem, story or speech here...
 
 यहाँ अपनी कविता, कहानी या भाषण लिखें...
-"""
+""",
 )
-c1, c2 = st.columns([1,1], gap="medium")
+c1, c2 = st.columns([1, 1], gap="medium")
 
 with c1:
     if st.button("📝 Load Sample", use_container_width=True):
@@ -417,11 +355,7 @@ with c2:
 # -----------------------------------
 # Generate Button
 # -----------------------------------
-if st.button(
-    "🎙️ Generate Narration",
-    use_container_width=True
-):
-
+if st.button("🎙️ Generate Narration", use_container_width=True):
 
     if poem.strip() == "":
         st.warning("Please enter some text.")
@@ -448,11 +382,7 @@ if st.button(
         speed = 0.80
         pitch = -1
 
-    lines = [
-        line
-        for line in poem.split("\n")
-        if line.strip()
-    ]
+    lines = [line for line in poem.split("\n") if line.strip()]
 
     final_audio = AudioSegment.empty()
 
@@ -460,71 +390,36 @@ if st.button(
 
     for i, line in enumerate(lines):
 
-        with tempfile.NamedTemporaryFile(
-            delete=False,
-            suffix=".mp3"
-        ) as fp:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
             tmp_mp3 = fp.name
 
-        asyncio.run(
-            generate_tts(
-                line,
-                voice,
-                tmp_mp3
-            )
-        )
+        asyncio.run(generate_tts(line, voice, tmp_mp3))
 
         try:
             y, sr = librosa.load(tmp_mp3)
 
             if pitch != 0:
-                y = librosa.effects.pitch_shift(
-                    y,
-                    sr=sr,
-                    n_steps=pitch
-                )
+                y = librosa.effects.pitch_shift(y, sr=sr, n_steps=pitch)
 
-            tmp_wav = tmp_mp3.replace(
-                ".mp3",
-                "_processed.wav"
-            )
+            tmp_wav = tmp_mp3.replace(".mp3", "_processed.wav")
 
-            sf.write(
-                tmp_wav,
-                y,
-                sr
-            )
+            sf.write(tmp_wav, y, sr)
 
-            segment = AudioSegment.from_file(
-                tmp_wav
-            )
+            segment = AudioSegment.from_file(tmp_wav)
 
             if speed > 1.0:
-                segment = segment.speedup(
-                    playback_speed=speed
-                )
+                segment = segment.speedup(playback_speed=speed)
 
             elif speed < 1.0:
-                new_frame_rate = int(
-                    segment.frame_rate * speed
-                )
+                new_frame_rate = int(segment.frame_rate * speed)
 
                 segment = segment._spawn(
-                    segment.raw_data,
-                    overrides={
-                        "frame_rate": new_frame_rate
-                    }
-                ).set_frame_rate(
-                    segment.frame_rate
-                )
+                    segment.raw_data, overrides={"frame_rate": new_frame_rate}
+                ).set_frame_rate(segment.frame_rate)
 
             final_audio += segment
 
-            final_audio += AudioSegment.silent(
-                duration=int(
-                    pause * 1000
-                )
-            )
+            final_audio += AudioSegment.silent(duration=int(pause * 1000))
 
             try:
                 os.remove(tmp_mp3)
@@ -533,44 +428,30 @@ if st.button(
                 pass
 
         except Exception as e:
-            st.error(
-                f"Error processing line:\n{line}\n\n{e}"
-            )
+            st.error(f"Error processing line:\n{line}\n\n{e}")
             st.stop()
 
-        progress.progress(
-            (i + 1) / len(lines)
-        )
+        progress.progress((i + 1) / len(lines))
 
     extension = output_format.lower()
-        
+
     if background_music != "None" or uploaded_music:
 
-        music_file = os.path.join(
-    "assets/music",
-    background_music
-)
+        music_file = os.path.join("assets/music", background_music)
 
         if uploaded_music:
-            bg_music = AudioSegment.from_file(
-                uploaded_music
-            )
+            bg_music = AudioSegment.from_file(uploaded_music)
         else:
-            music_file = os.path.join(
-                "assets/music",
-                background_music
-            )
+            music_file = os.path.join("assets/music", background_music)
 
-            bg_music = AudioSegment.from_file(
-            music_file
-         )
+            bg_music = AudioSegment.from_file(music_file)
 
         bg_music = bg_music - 20
 
         while len(bg_music) < len(final_audio):
             bg_music += bg_music
 
-        bg_music = bg_music[:len(final_audio)]
+        bg_music = bg_music[: len(final_audio)]
 
         final_audio = final_audio.overlay(bg_music)
 
@@ -578,30 +459,21 @@ if st.button(
     output_file = f"{file_name}.{extension}"
 
     try:
-        final_audio.export(
-            output_file,
-            format=extension
-        )
+        final_audio.export(output_file, format=extension)
     except Exception as e:
         st.error(f"Export failed:\n{e}")
         st.stop()
 
     st.balloons()
-    st.success(
-        f"🎉 Your {output_format} narration is ready!"
-    )
+    st.success(f"🎉 Your {output_format} narration is ready!")
 
     st.markdown("## 🎧 Audio Preview")
 
     with st.container(border=True):
-       st.subheader("🎧 Preview")
-       st.audio(output_file)
+        st.subheader("🎧 Preview")
+        st.audio(output_file)
 
-    mime_type = (
-        "audio/mpeg"
-        if extension == "mp3"
-        else "audio/wav"
-    )
+    mime_type = "audio/mpeg" if extension == "mp3" else "audio/wav"
 
     st.divider()
 
@@ -611,7 +483,7 @@ if st.button(
             data=f,
             file_name=output_file,
             mime=mime_type,
-            use_container_width=True
+            use_container_width=True,
         )
 
 
@@ -621,8 +493,7 @@ st.caption(
     f"{len(poem.splitlines())} lines"
 )
 
-st.info(
-"""
+st.info("""
 💡 Tips
 
 • Paste your poem or story.
@@ -630,32 +501,20 @@ st.info(
 • Generate and download your narration.
 
 Supports both English and Hindi.
-"""
-)
+""")
 
 st.markdown("### 📊 Text Statistics")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric(
-        "📝 Characters",
-        len(poem)
-    )
+    st.metric("📝 Characters", len(poem))
 
 with col2:
-    st.metric(
-        "📄 Words",
-        len(poem.split())
-    )
+    st.metric("📄 Words", len(poem.split()))
 
 with col3:
-    st.metric(
-        "⏱ Est. Minutes",
-        max(1, len(poem.split()) // 130)
-    )
-
-
+    st.metric("⏱ Est. Minutes", max(1, len(poem.split()) // 130))
 
 
 # -----------------------------------
@@ -664,7 +523,8 @@ with col3:
 st.markdown("---")
 st.markdown("---")
 
-st.markdown("""
+st.markdown(
+    """
 <div style="
 text-align:center;
 padding:20px;
@@ -675,4 +535,6 @@ opacity:0.8;
 <p>Version 3.3 Premium Edition</p>
 <p>Made with ❤️ in India</p>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
