@@ -8,15 +8,6 @@ import librosa
 import glob
 import soundfile as sf
 
-import sys
-
-try:
-    import audioop
-except ModuleNotFoundError:
-    import pyaudioop as audioop
-
-    sys.modules["audioop"] = audioop
-
 from pydub import AudioSegment
 from docx import Document
 from pypdf import PdfReader
