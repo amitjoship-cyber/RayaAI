@@ -2,19 +2,6 @@ import streamlit as st
 import asyncio
 import edge_tts
 
-try:
-    cloud_voices = asyncio.run(edge_tts.list_voices())
-    print("EDGE TTS CLOUD VOICES:", len(cloud_voices))
-    print(
-        "PRABHAT FOUND:",
-        any(v["ShortName"] == "en-IN-PrabhatNeural" for v in cloud_voices),
-    )
-    print(
-        "NEERJA FOUND:",
-        any(v["ShortName"] == "en-IN-NeerjaNeural" for v in cloud_voices),
-    )
-except Exception as e:
-    print("EDGE TTS VOICE CHECK FAILED:", repr(e))
 import tempfile
 import os
 import shutil
@@ -53,15 +40,6 @@ else:
 VOICE_OPTIONS = {
     "Hindi - Madhur (Male)": "hi-IN-MadhurNeural",
     "Hindi - Swara (Female)": "hi-IN-SwaraNeural",
-    "English India - Prabhat (Male)": "en-IN-PrabhatNeural",
-    "English India - Neerja (Female)": "en-IN-NeerjaNeural",
-    "English India - Neerja Expressive (Female)": "en-IN-NeerjaExpressiveNeural",
-    "English US - Andrew (Male)": "en-US-AndrewNeural",
-    "English US - Aria (Female)": "en-US-AriaNeural",
-    "English US - Jenny (Female)": "en-US-JennyNeural",
-    "English UK - Ryan (Male)": "en-GB-RyanNeural",
-    "English UK - Sonia (Female)": "en-GB-SoniaNeural",
-    "English UK - Thomas (Male)": "en-GB-ThomasNeural",
 }
 
 # -----------------------------------
