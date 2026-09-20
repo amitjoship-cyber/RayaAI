@@ -1,6 +1,20 @@
 import streamlit as st
 import asyncio
 import edge_tts
+
+try:
+    cloud_voices = asyncio.run(edge_tts.list_voices())
+    print("EDGE TTS CLOUD VOICES:", len(cloud_voices))
+    print(
+        "PRABHAT FOUND:",
+        any(v["ShortName"] == "en-IN-PrabhatNeural" for v in cloud_voices),
+    )
+    print(
+        "NEERJA FOUND:",
+        any(v["ShortName"] == "en-IN-NeerjaNeural" for v in cloud_voices),
+    )
+except Exception as e:
+    print("EDGE TTS VOICE CHECK FAILED:", repr(e))
 import tempfile
 import os
 import shutil
