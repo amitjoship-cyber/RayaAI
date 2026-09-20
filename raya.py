@@ -34,13 +34,16 @@ else:
 # Voice Library
 # -----------------------------------
 VOICE_OPTIONS = {
+    "Hindi - Hemant (Male)": "hi-IN-Hemant",
+    "Hindi - Kalpana (Female)": "hi-IN-Kalpana",
     "Hindi - Madhur (Male)": "hi-IN-MadhurNeural",
     "Hindi - Swara (Female)": "hi-IN-SwaraNeural",
-    "English India - Prabhat (Male)": "en-IN-PrabhatNeural",
-    "English India - Neerja (Female)": "en-IN-NeerjaNeural",
-    "English US - Jenny (Female)": "en-US-JennyNeural",
-    "English UK - Ryan (Male)": "en-GB-RyanNeural",
+    "English India - Ravi (Male)": "en-IN-Ravi",
+    "English India - Heera (Female)": "en-IN-Heera",
+    "English US - Aria (Female)": "en-US-Aria",
+    "English UK - George (Male)": "en-GB-George",
 }
+
 
 # -----------------------------------
 # Page Settings
